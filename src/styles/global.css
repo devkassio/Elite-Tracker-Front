@@ -1,3 +1,13 @@
+:root {
+    --black-blue: #04141c;
+    --dark-blue: #001e2b;
+    --dark-light-blue: #003045;
+    --white: #ffffff;
+    --info: #016bf8;
+    --info-hover: #003578;
+    --light: #828282;
+}
+
 * {
 	box-sizing: border-box;
 	margin: 0;
