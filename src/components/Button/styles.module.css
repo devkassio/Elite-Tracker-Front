@@ -1,6 +1,6 @@
 .container {
-	background-color: #016bf8;
-	color: #ffffff;
+	background-color: var(--info);
+	color: var(--white);
 	font-size: 16px;
 	padding: 12px 24px;
 	border-radius: 4px;
@@ -14,5 +14,5 @@
 }
 
 .container:hover {
-	background-color: #003578;
+	background-color: var(--info-hover);
 }

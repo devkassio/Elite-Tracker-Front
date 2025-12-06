@@ -1,14 +1,14 @@
 .container {
-	background-color: #04141c;
+	background-color: var(--black-blue);
 	height: 100vh;
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	color: #ffffff;
+	color: var(--white);
 }
 
 .content {
-	background-color: #001e2b;
+	background-color: var(--dark-blue);
 	width: 400px;
 	border-radius: 8px;
 	display: flex;
@@ -19,7 +19,7 @@
 }
 
 .content h1 {
-	color: #ffffff;
+	color: var(--white);
 	text-align: center;
 	font-size: 24px;
 }
