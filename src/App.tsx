@@ -1,5 +1,5 @@
-function App() {
-	return <h1>Hello React</h1>;
-}
+import LoginPage from "./pages/login";
 
-export default App;
+export default function App() {
+	return <LoginPage />;
+}
