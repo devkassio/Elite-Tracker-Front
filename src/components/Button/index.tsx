@@ -1,12 +1,11 @@
+import type { ComponentProps } from 'react';
 import styles from './styles.module.css';
 
-type ButtonProps = {
-	children: React.ReactNode;
-};
+type ButtonProps = ComponentProps<'button'>;
 
-export default function Button({ children }: ButtonProps) {
+export default function Button({ children, ...rest }: ButtonProps) {
 	return (
-		<button type="button" className={styles.container}>
+		<button type="button" className={styles.container} {...rest}>
 			{children}
 		</button>
 	);
