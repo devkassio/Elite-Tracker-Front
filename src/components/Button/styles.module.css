@@ -1,0 +1,18 @@
+.container {
+	background-color: #016bf8;
+	color: #ffffff;
+	font-size: 16px;
+	padding: 12px 24px;
+	border-radius: 4px;
+	margin-top: 24px;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	transition: background-color 0.3s ease;
+}
+
+.container:hover {
+	background-color: #003578;
+}
