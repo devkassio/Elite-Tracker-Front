@@ -10,7 +10,7 @@ export default function HabitsPage() {
 					<span>Hoje, 06 de Dezembro</span>
 				</header>
 				<div className={styles.input}>
-					<input type="text" />
+					<input placeholder="Digite um novo hábito" type="text" />
 					<PaperPlaneRightIcon />
 				</div>
 				<div className={styles.habit}>
