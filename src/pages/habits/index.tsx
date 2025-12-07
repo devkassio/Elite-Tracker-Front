@@ -13,10 +13,14 @@ export default function HabitsPage() {
 					<input placeholder="Digite um novo hábito" type="text" />
 					<PaperPlaneRightIcon />
 				</div>
-				<div className={styles.habit}>
-					<p>Estudar React Native</p>
-					<input type="checkbox" name="" id="" />
-					<TrashIcon />
+				<div className={styles.habits}>
+					<div className={styles.habit}>
+						<p>Estudar React Native</p>
+						<div className={styles.actions}>
+							<input type="checkbox" name="" id="" />
+							<TrashIcon />
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
