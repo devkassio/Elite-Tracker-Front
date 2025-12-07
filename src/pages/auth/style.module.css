@@ -1,0 +1,13 @@
+.container {
+    background-color: var(--dark-blue);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--white);
+}
+
+.container h1 {
+    font-size: 24px;
+    color: var(--white);
+}
