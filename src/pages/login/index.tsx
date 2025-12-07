@@ -1,15 +1,12 @@
-import axios from 'axios';
 import { FaGithub } from 'react-icons/fa';
 import Button from '../../components/Button';
+import api from '../../services/api';
 import styles from './styles.module.css';
-/* import { useNavigate } from 'react-router-dom'; */
 
 export default function LoginPage() {
-	/* const navigate = useNavigate(); */
-
 	async function handleAuth() {
 		try {
-			const { data } = await axios.get('http://localhost:4000/auth', {
+			const { data } = await api.get('/auth', {
 				withCredentials: true,
 			});
 			window.location.href = data.redirectUrl;
