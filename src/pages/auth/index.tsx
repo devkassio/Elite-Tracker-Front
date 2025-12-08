@@ -1,42 +1,75 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import api from '../../services/api';
+import { useUser } from '../../hooks/use.user';
 import styles from './style.module.css';
 
 export default function AuthPage() {
 	const [searchParams] = useSearchParams();
 	const navigate = useNavigate();
-	const [error, setError] = useState<string | null>(null);
+	const { userData, getUserInfo, loading, error } = useUser();
+	const [localError, setLocalError] = useState<string | null>(null);
+	const [showWelcome, setShowWelcome] = useState(false);
+	const hasProcessed = useRef(false);
 
 	useEffect(() => {
-		async function getUserInfo() {
+		async function handleAuth() {
+			if (hasProcessed.current) {
+				return;
+			}
+
 			try {
 				const code = searchParams.get('code');
 
-				if (!code) {
-					setError('Código de autenticação não encontrado');
-					setTimeout(() => navigate('/login'), 3000);
+				if (!code || code.trim() === '') {
+					setLocalError('Código de autenticação não encontrado');
+					setTimeout(() => navigate('/login', { replace: true }), 3000);
 					return;
 				}
 
-				const { data } = await api.get(`/auth/callback?code=${code}`);
-
-				// Salva token ou dados do usuário se necessário
-				if (data.token) {
-					localStorage.setItem('token', data.token);
+				if (userData?.token) {
+					navigate('/', { replace: true });
+					return;
 				}
 
-				// Redireciona para a página principal
-				navigate('/');
-			} catch (err) {
-				console.error('Erro na autenticação:', err);
-				setError('Falha na autenticação. Redirecionando...');
-				setTimeout(() => navigate('/login'), 3000);
+				hasProcessed.current = true;
+
+				await getUserInfo(code);
+
+				setShowWelcome(true);
+				setTimeout(() => navigate('/', { replace: true }), 2000);
+			} catch {
+				setLocalError('Falha na autenticação. Redirecionando para login...');
+				setTimeout(() => navigate('/login', { replace: true }), 3000);
 			}
 		}
 
-		getUserInfo();
-	}, [searchParams, navigate]);
+		handleAuth();
+	}, [searchParams, getUserInfo, userData, navigate]);
 
-	return <div className={styles.container}>{error ? <h1>{error}</h1> : <h1>Autenticando...</h1>}</div>;
+	// Renderiza mensagens de erro ou sucesso
+	const displayError = localError || error;
+
+	if (displayError) {
+		return (
+			<div className={styles.container}>
+				<h1 style={{ color: 'var(--danger)' }}>{displayError}</h1>
+			</div>
+		);
+	}
+
+	if (showWelcome && userData) {
+		return (
+			<div className={styles.container}>
+				<h1>Bem-vindo, {userData.name}! ✨</h1>
+				<p>Redirecionando...</p>
+			</div>
+		);
+	}
+
+	return (
+		<div className={styles.container}>
+			<h1>Autenticando...</h1>
+			{loading && <p>Aguarde um momento</p>}
+		</div>
+	);
 }

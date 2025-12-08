@@ -1,13 +1,28 @@
 .container {
     background-color: var(--dark-blue);
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     color: var(--white);
+    padding: 20px;
+    text-align: center;
 }
 
 .container h1 {
-    font-size: 24px;
+    font-size: clamp(20px, 5vw, 32px);
     color: var(--white);
+    font-weight: 600;
+    margin-bottom: 12px;
+    line-height: 1.4;
+    max-width: 90%;
+    word-wrap: break-word;
+}
+
+.container p {
+    font-size: clamp(14px, 3vw, 16px);
+    color: var(--light);
+    margin-top: 16px;
+    max-width: 90%;
 }
