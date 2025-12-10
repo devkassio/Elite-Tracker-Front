@@ -1,8 +1,20 @@
 import { PaperPlaneRightIcon, TrashIcon } from '@phosphor-icons/react';
+import { useRef } from 'react';
 import SideBar from '../../components/SideBar';
+import api from '../../services/api';
 import styles from './styles.module.css';
 
 export default function HabitsPage() {
+	const nameInput = useRef<HTMLInputElement>(null);
+
+	async function handleAddHabit() {
+		const habitName = nameInput.current?.value;
+		if (habitName && nameInput.current) {
+			await api.post('/habits', { name: habitName });
+			nameInput.current.value = '';
+		}
+	}
+
 	return (
 		<div className={styles.app}>
 			<SideBar />
@@ -10,11 +22,11 @@ export default function HabitsPage() {
 				<div className={styles.content}>
 					<header className={styles.header}>
 						<h1>Hábitos Diários</h1>
-						<span>Hoje, 06 de Dezembro</span>
+						<span>{`${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full' }).format(new Date())}`}</span>
 					</header>
 					<div className={styles.input}>
-						<input placeholder="Digite um novo hábito" type="text" />
-						<PaperPlaneRightIcon />
+						<input ref={nameInput} placeholder="Digite um novo hábito" type="text" />
+						<PaperPlaneRightIcon onClick={handleAddHabit} />
 					</div>
 					<div className={styles.habits}>
 						<div className={styles.habit}>
