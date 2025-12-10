@@ -35,7 +35,17 @@
     cursor: pointer;
     fill: var(--white);
     transition: fill 0.3s ease;
+    background: none;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .logout:hover {
     fill: var(--danger-hover);
+}
+
+.logout svg {
+    fill: inherit;
 }

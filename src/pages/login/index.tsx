@@ -1,9 +1,22 @@
+import { useEffect } from 'react';
 import { FaGithub } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
+import { useUser } from '../../hooks/use.user';
 import api from '../../services/api';
 import styles from './styles.module.css';
 
 export default function LoginPage() {
+	const { isAuthenticated, loading } = useUser();
+	const navigate = useNavigate();
+
+	// Redireciona se já estiver autenticado
+	useEffect(() => {
+		if (!loading && isAuthenticated) {
+			navigate('/', { replace: true });
+		}
+	}, [isAuthenticated, loading, navigate]);
+
 	async function handleAuth() {
 		try {
 			const { data } = await api.get('/auth', {
@@ -13,6 +26,15 @@ export default function LoginPage() {
 		} catch (error) {
 			console.error('Erro ao autenticar:', error);
 		}
+	}
+
+	// Não renderiza se estiver autenticado
+	if (loading) {
+		return null;
+	}
+
+	if (isAuthenticated) {
+		return null;
 	}
 
 	return (
