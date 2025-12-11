@@ -1,0 +1,12 @@
+.header h1 {
+    color: var(--white);
+    font-size: 28px;
+    margin-bottom: 12px;
+    font-weight: 400;
+}
+
+.header span {
+    font-size: 14px;
+    color: var(--white);
+    font-weight: 300;
+}

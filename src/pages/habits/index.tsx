@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import ConfirmModal from '../../components/ConfirmModal';
-import SideBar from '../../components/SideBar';
+import Header from '../../components/HeadeFix';
 import api from '../../services/api';
 import styles from './styles.module.css';
 
@@ -205,7 +205,7 @@ export default function HabitsPage() {
 	}, []);
 
 	return (
-		<div className={styles.app}>
+		<>
 			<Toaster
 				position="top-right"
 				toastOptions={{
@@ -229,13 +229,9 @@ export default function HabitsPage() {
 					},
 				}}
 			/>
-			<SideBar />
 			<div className={styles.container}>
 				<div className={styles.content}>
-					<header className={styles.header}>
-						<h1>Hábitos Diários</h1>
-						<span>{`${new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full' }).format(new Date())}`}</span>
-					</header>
+					<Header title="Hábitos Diários" />
 					<div className={styles.input}>
 						<input ref={nameInput} placeholder="Digite um novo hábito" type="text" onKeyPress={handleKeyPress} />
 						<PaperPlaneRightIcon onClick={handleAddHabit} />
@@ -288,6 +284,6 @@ export default function HabitsPage() {
 				cancelText="Cancelar"
 				isLoading={deleting !== null}
 			/>
-		</div>
+		</>
 	);
 }

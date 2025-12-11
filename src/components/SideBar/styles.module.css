@@ -15,19 +15,37 @@
 
 .links {
     margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
 }
 
-.links a {
+.link {
     text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
 }
 
-.links a svg {
+.link svg {
     fill: var(--white);
     transition: fill 0.3s ease;
 }
 
-.links a:hover svg {
+.link:hover svg {
     fill: var(--info);
+}
+
+.link.active {
+    fill: var(--light);
+}
+
+.link.active svg {
+    fill: var(--light);
 }
 
 .logout {

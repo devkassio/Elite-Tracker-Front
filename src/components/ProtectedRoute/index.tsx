@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useUser } from '../../hooks/use.user';
+import { AppContainer } from '../App-container';
+import SideBar from '../SideBar';
 
 type ProtectedRouteProps = {
 	children: ReactNode;
@@ -33,5 +35,10 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 	}
 
 	// Se autenticado, renderiza o conteúdo
-	return <>{children}</>;
+	return (
+		<AppContainer>
+			<SideBar />
+			{children}
+		</AppContainer>
+	);
 }

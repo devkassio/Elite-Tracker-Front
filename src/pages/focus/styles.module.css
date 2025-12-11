@@ -1,0 +1,15 @@
+.container {
+    background-color: var(--dark-blue);
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.content {
+    max-width: 800px;
+    padding: 25px;
+    border-right: 1px solid var(--light);
+    height: calc(100vh - 80px);
+    box-sizing: border-box;
+}
