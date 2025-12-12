@@ -16,3 +16,18 @@
 .container:hover {
 	background-color: var(--info-hover);
 }
+
+.error {
+	background-color: var(--danger);
+}
+.error:hover {
+	background-color: var(--danger-hover);
+}
+
+.disabled {
+	background-color: var(--light);
+	cursor: not-allowed;
+}
+.disabled:hover {
+	background-color: var(--neutral);
+}
