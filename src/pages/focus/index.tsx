@@ -29,6 +29,7 @@ type FocusTimeEntry = {
 	_id: string;
 	timeFrom: string;
 	timeTo: string;
+	type: 'focus' | 'rest';
 	userId: string;
 	createdAt: string;
 	updatedAt: string;
@@ -125,13 +126,24 @@ export default function Focus() {
 	}, [focusMetrics]);
 
 	const dayMetrics = useMemo(() => {
-		const entries = focusTimeEntries.map((entry) => ({
-			timeFrom: dayjs(entry.timeFrom),
-			timeTo: dayjs(entry.timeTo),
-			duration: Math.max(1, dayjs(entry.timeTo).diff(dayjs(entry.timeFrom), 'minute')),
-		}));
-		const totalMinutes = entries.reduce((sum, e) => sum + e.duration, 0);
-		return { entries, totalMinutes };
+		const entries = focusTimeEntries.map((entry) => {
+			const from = dayjs(entry.timeFrom);
+			const to = dayjs(entry.timeTo);
+			const durationSeconds = to.diff(from, 'second');
+			const durationMinutes = Math.floor(durationSeconds / 60);
+			const remainingSeconds = durationSeconds % 60;
+			return {
+				timeFrom: from,
+				timeTo: to,
+				durationMinutes,
+				durationSeconds: remainingSeconds,
+				totalSeconds: durationSeconds,
+				type: entry.type || 'focus',
+			};
+		});
+		const totalSeconds = entries.reduce((sum, e) => sum + e.totalSeconds, 0);
+		const totalMinutes = Math.floor(totalSeconds / 60);
+		return { entries, totalMinutes, totalSeconds };
 	}, [focusTimeEntries]);
 
 	const formatTotalTime = (minutes: number): string => {
@@ -170,29 +182,34 @@ export default function Focus() {
 		}
 	}
 
-	const saveFocusTime = useCallback(
-		async (startTime: Date) => {
+	const saveTime = useCallback(
+		async (startTime: Date, type: 'focus' | 'rest') => {
 			const endTime = new Date();
 			const durationMs = endTime.getTime() - startTime.getTime();
-			const durationMinutes = Math.floor(durationMs / 60000);
+			const durationSeconds = Math.floor(durationMs / 1000);
 
-			if (durationMinutes < 1) {
-				toast.error('Tempo muito curto (mínimo 1 minuto)');
+			if (durationSeconds < 10) {
+				toast.error('Tempo muito curto (mínimo 10 segundos)');
 				return false;
 			}
+
+			const durationMinutes = Math.floor(durationSeconds / 60);
+			const remainingSeconds = durationSeconds % 60;
 
 			try {
 				await api.post('/focus-times', {
 					timeFrom: startTime.toISOString(),
 					timeTo: endTime.toISOString(),
+					type,
 				});
-				toast.success(`Tempo salvo: ${durationMinutes} minutos!`);
+				const typeLabel = type === 'focus' ? 'Foco' : 'Descanso';
+				toast.success(`${typeLabel} salvo: ${durationMinutes}min ${remainingSeconds}s`);
 				await loadFocusMetrics(currentMonth);
 				await loadFocusTimeEntries(selectedDate);
 				return true;
 			} catch (error) {
 				console.error('Erro ao salvar:', error);
-				toast.error('Erro ao salvar tempo de foco');
+				toast.error('Erro ao salvar tempo');
 				return false;
 			}
 		},
@@ -204,9 +221,7 @@ export default function Focus() {
 		if (status === 'idle') {
 			setTimeLeft(initialTime);
 			setTotalTime(initialTime);
-			if (mode === 'focus') {
-				setSessionStart(new Date());
-			}
+			setSessionStart(new Date());
 		}
 		setStatus('running');
 	}, [status, mode, focusTime, restTime]);
@@ -214,22 +229,20 @@ export default function Focus() {
 	const handlePause = useCallback(async () => {
 		clearTimer();
 		setStatus('paused');
-		if (mode === 'focus' && sessionStart) {
-			await saveFocusTime(sessionStart);
+		if (sessionStart) {
+			await saveTime(sessionStart, mode);
 			setSessionStart(null);
 		}
-	}, [clearTimer, mode, sessionStart, saveFocusTime]);
+	}, [clearTimer, mode, sessionStart, saveTime]);
 
 	const handleResume = useCallback(() => {
-		if (mode === 'focus') {
-			setSessionStart(new Date());
-		}
+		setSessionStart(new Date());
 		setStatus('running');
-	}, [mode]);
+	}, []);
 
 	const handleCancel = useCallback(async () => {
-		if (status === 'running' && mode === 'focus' && sessionStart) {
-			await saveFocusTime(sessionStart);
+		if (status === 'running' && sessionStart) {
+			await saveTime(sessionStart, mode);
 		}
 		clearTimer();
 		setStatus('idle');
@@ -237,22 +250,25 @@ export default function Focus() {
 		setTimeLeft(focusTime * 60);
 		setTotalTime(focusTime * 60);
 		setSessionStart(null);
-	}, [clearTimer, focusTime, status, mode, sessionStart, saveFocusTime]);
+	}, [clearTimer, focusTime, status, mode, sessionStart, saveTime]);
 
 	const handleStartRest = useCallback(async () => {
 		if (status === 'running' && mode === 'focus' && sessionStart) {
-			await saveFocusTime(sessionStart);
+			await saveTime(sessionStart, 'focus');
 		}
 		clearTimer();
 		setMode('rest');
 		const time = restTime * 60;
 		setTimeLeft(time);
 		setTotalTime(time);
-		setSessionStart(null);
+		setSessionStart(new Date());
 		setStatus('running');
-	}, [clearTimer, restTime, mode, sessionStart, status, saveFocusTime]);
+	}, [clearTimer, restTime, mode, sessionStart, status, saveTime]);
 
-	const handleStartFocus = useCallback(() => {
+	const handleStartFocus = useCallback(async () => {
+		if (status === 'running' && mode === 'rest' && sessionStart) {
+			await saveTime(sessionStart, 'rest');
+		}
 		clearTimer();
 		setMode('focus');
 		const time = focusTime * 60;
@@ -260,7 +276,7 @@ export default function Focus() {
 		setTotalTime(time);
 		setSessionStart(new Date());
 		setStatus('running');
-	}, [clearTimer, focusTime]);
+	}, [clearTimer, focusTime, mode, sessionStart, status, saveTime]);
 
 	async function handlePrevMonth() {
 		const newMonth = dayjs(currentMonth).subtract(1, 'month').toDate();
@@ -304,26 +320,27 @@ export default function Focus() {
 				setTimeLeft((prev) => {
 					if (prev <= 1) {
 						clearTimer();
-						if (mode === 'focus' && sessionStart) {
-							saveFocusTime(sessionStart).then(() => {
+						if (sessionStart) {
+							saveTime(sessionStart, mode).then(() => {
 								setSessionStart(null);
-								setMode('rest');
+								if (mode === 'focus') {
+									setMode('rest');
+									setTotalTime(restTime * 60);
+								} else {
+									setMode('focus');
+									setTotalTime(focusTime * 60);
+								}
 								setStatus('idle');
-								setTotalTime(restTime * 60);
 							});
-							return restTime * 60;
 						}
-						setMode('focus');
-						setStatus('idle');
-						setTotalTime(focusTime * 60);
-						return focusTime * 60;
+						return mode === 'focus' ? restTime * 60 : focusTime * 60;
 					}
 					return prev - 1;
 				});
 			}, 1000);
 		}
 		return () => clearTimer();
-	}, [status, mode, focusTime, restTime, clearTimer, saveFocusTime, sessionStart]);
+	}, [status, mode, focusTime, restTime, clearTimer, saveTime, sessionStart]);
 
 	useEffect(() => {
 		if (status === 'idle') {
@@ -393,7 +410,14 @@ export default function Focus() {
 									strokeLinecap="round"
 								/>
 							</svg>
-							<span className={styles.timerText}>{formatTime(timeLeft)}</span>
+							<div className={styles.timerContent}>
+								<span className={styles.timerText}>{formatTime(timeLeft)}</span>
+								{status !== 'idle' && (
+									<span className={`${styles.timerStatus} ${mode === 'focus' ? styles.timerStatusFocus : styles.timerStatusRest}`}>
+										{mode === 'focus' ? 'Em Foco' : 'Em Descanso'}
+									</span>
+								)}
+							</div>
 						</div>
 						<div className={styles.buttonGroup}>
 							{status === 'idle' && (
@@ -444,18 +468,23 @@ export default function Focus() {
 								</div>
 							) : dayMetrics.entries.length > 0 ? (
 								dayMetrics.entries.map((entry, index) => (
-									<div key={index} className={styles.timeEntry}>
+									<div key={index} className={`${styles.timeEntry} ${entry.type === 'rest' ? styles.timeEntryRest : ''}`}>
 										<Clock size={16} weight="regular" />
-										<span className={styles.timeRange}>
-											{entry.timeFrom.format('HH:mm')} - {entry.timeTo.format('HH:mm')}
+										<span className={`${styles.entryType} ${entry.type === 'rest' ? styles.entryTypeRest : ''}`}>
+											{entry.type === 'focus' ? 'Foco' : 'Descanso'}
 										</span>
-										<span className={styles.duration}>{entry.duration} min</span>
+										<span className={styles.timeRange}>
+											{entry.timeFrom.format('HH:mm:ss')} - {entry.timeTo.format('HH:mm:ss')}
+										</span>
+										<span className={styles.duration}>
+											{entry.durationMinutes}min {entry.durationSeconds}s
+										</span>
 									</div>
 								))
 							) : (
 								<div className={styles.timeEntry}>
 									<Clock size={16} weight="regular" />
-									<span className={styles.timeRange}>Sem sessões de foco</span>
+									<span className={styles.timeRange}>Sem sessões registradas</span>
 									<span className={styles.duration}>—</span>
 								</div>
 							)}

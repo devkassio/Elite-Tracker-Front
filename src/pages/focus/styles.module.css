@@ -114,6 +114,29 @@
 	letter-spacing: 2px;
 }
 
+.timerContent {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.25rem;
+}
+
+.timerStatus {
+	font-size: 0.9rem;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+}
+
+.timerStatusFocus {
+	color: var(--info);
+}
+
+.timerStatusRest {
+	color: var(--success, #22c55e);
+}
+
 .buttonGroup {
 	display: flex;
 	flex-wrap: wrap;
@@ -181,9 +204,33 @@
 	border-left: 3px solid var(--info);
 }
 
+.timeEntryRest {
+	background-color: rgba(34, 197, 94, 0.1);
+	border-left: 3px solid var(--success, #22c55e);
+}
+
+.timeEntryRest svg {
+	color: var(--success, #22c55e);
+}
+
 .timeEntry svg {
 	color: var(--info);
 	flex-shrink: 0;
+}
+
+.entryType {
+	font-size: 0.7rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	padding: 2px 6px;
+	border-radius: 4px;
+	background-color: rgba(1, 107, 248, 0.2);
+	color: var(--info);
+}
+
+.entryTypeRest {
+	background-color: rgba(34, 197, 94, 0.2);
+	color: var(--success, #22c55e);
 }
 
 .timeRange {
@@ -197,13 +244,15 @@
 	color: var(--light);
 }
 
-/* Calendar - Tamanho compacto */
+/* Calendar - Tamanho médio e centralizado */
 .calendar {
 	background-color: var(--light-bg, #0a1f2a);
 	border-radius: 8px;
-	padding: 0.75rem;
+	padding: 1rem;
 	border: 1px solid var(--border, #1a3545);
-	max-width: 280px;
+	max-width: 320px;
+	width: 100%;
+	margin: 0 auto;
 }
 
 .calendarHeader {
@@ -231,7 +280,7 @@
 }
 
 .calendarTitle {
-	font-size: 0.875rem;
+	font-size: 1rem;
 	font-weight: 600;
 	color: white;
 	text-transform: capitalize;
@@ -240,31 +289,31 @@
 .calendarWeekdays {
 	display: grid;
 	grid-template-columns: repeat(7, 1fr);
-	gap: 2px;
-	margin-bottom: 4px;
+	gap: 4px;
+	margin-bottom: 6px;
 }
 
 .weekday {
 	text-align: center;
-	font-size: 0.65rem;
+	font-size: 0.75rem;
 	font-weight: 600;
 	color: var(--light);
-	padding: 2px 0;
+	padding: 4px 0;
 }
 
 .calendarDays {
 	display: grid;
 	grid-template-columns: repeat(7, 1fr);
-	gap: 2px;
+	gap: 4px;
 }
 
 .calendarDay {
-	width: 28px;
-	height: 28px;
+	width: 34px;
+	height: 34px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 0.75rem;
+	font-size: 0.85rem;
 	color: white;
 	background: transparent;
 	border: none;

@@ -165,10 +165,10 @@ export default function HabitsPage() {
 	// NÃO mostra nada para datas futuras
 	const allHabitsDayStatus = useMemo<HabitDayStatus[]>(() => {
 		if (!selectedDate) return [];
-		
+
 		// Datas futuras não têm dados
 		if (isSelectedDateFuture) return [];
-		
+
 		const dateStr = dayjs(selectedDate).format('YYYY-MM-DD');
 		const selectedDateStart = dayjs(selectedDate).startOf('day');
 
@@ -181,6 +181,16 @@ export default function HabitsPage() {
 			return { habit, isCompleted, existedOnDate };
 		});
 	}, [selectedDate, habits, isSelectedDateFuture]);
+
+	// Calcular porcentagem de conclusão do dia selecionado
+	const dayCompletionPercentage = useMemo(() => {
+		const habitsOnDate = allHabitsDayStatus.filter((item) => item.existedOnDate);
+		if (habitsOnDate.length === 0) return null;
+		
+		const completedCount = habitsOnDate.filter((item) => item.isCompleted).length;
+		const percentage = Math.round((completedCount / habitsOnDate.length) * 100);
+		return `${percentage}%`;
+	}, [allHabitsDayStatus]);
 
 	// Buscar métricas do hábito
 	const fetchMetrics = useCallback(async (habit: Habit, month: Date) => {
@@ -471,14 +481,22 @@ export default function HabitsPage() {
 						{/* Estatísticas */}
 						<div className={styles.infoContainer}>
 							<Info value={metricsInfo.completedDatesPerMonth} label="Dias concluídos" />
-							<Info value={metricsInfo.completionPercentage} label="Porcentagem" />
+							<Info 
+								value={selectedDate && dayCompletionPercentage ? dayCompletionPercentage : metricsInfo.completionPercentage} 
+								label={selectedDate ? "% do Dia" : "% do Mês"} 
+							/>
 						</div>
 
 						{/* Feature: Detalhes do dia selecionado */}
 						<div className={styles.dayDetails}>
 							{selectedDate ? (
 								<>
-									<h3 className={styles.dayTitle}>{selectedDateFormatted}</h3>
+									<h3 className={styles.dayTitle}>
+										{selectedDateFormatted}
+										{dayCompletionPercentage && (
+											<span className={styles.dayPercentage}> — {dayCompletionPercentage}</span>
+										)}
+									</h3>
 									<div className={styles.dayContent}>
 										{/* Data futura - não pode ter dados */}
 										{isSelectedDateFuture ? (
