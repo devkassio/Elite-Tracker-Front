@@ -2,16 +2,16 @@
     background-color: var(--dark-blue);
     min-height: 100vh;
     width: 100%;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
 }
 
 .content {
-    max-width: 800px;
     padding: 25px;
     border-right: 1px solid var(--light);
     height: calc(100vh - 80px);
     box-sizing: border-box;
+    overflow-y: auto;
 }
 
 .input {
@@ -33,57 +33,88 @@
     outline: none;
 }
 
-.input svg {
-    height: 20px;
-    width: 20px;
-    fill: var(--white);
-    cursor: pointer;
-    margin-left: 8px;
-    transition: fill 0.3s ease;
-}
-
-.input svg:hover {
-    fill: var(--info);
-}
-
 .input input::placeholder {
     color: var(--light);
 }
 
-.habits {
-    margin-top: 40px;
+.sendIcon {
+    height: 20px;
+    width: 20px;
+    color: var(--white);
+    cursor: pointer;
+    margin-left: 8px;
+    transition: color 0.3s ease;
 }
 
+.sendIcon:hover {
+    color: var(--info);
+}
+
+/* Lista de hábitos */
+.habits {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.emptyMessage {
+    color: var(--light);
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Card do hábito */
 .habit {
-display: flex;
-align-items: center;
-justify-content: space-between;
-border-bottom: 1px solid var(--light);
-padding: 12px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--light);
+    padding: 14px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-radius: 4px;
+    margin-bottom: 2px;
+}
+
+.habit:hover {
+    background-color: var(--info-hover);
+}
+
+.habitActive {
+    background-color: var(--info-hover);
 }
 
 .habit p {
     color: var(--white);
-    font-size: 14px;
+    font-size: 15px;
     flex: 1;
+    margin: 0;
+    cursor: pointer;
 }
 
+/* Ações do hábito */
 .actions {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 16px;
 }
 
 .actions input[type="checkbox"] {
     appearance: none;
     -webkit-appearance: none;
-    width: 17px;
-    height: 17px;
+    width: 18px;
+    height: 18px;
     border: 2px solid var(--white);
     border-radius: 50%;
     cursor: pointer;
     position: relative;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    background: transparent;
+}
+
+.actions input[type="checkbox"]:hover {
+    border-color: var(--info);
 }
 
 .actions input[type="checkbox"]:checked {
@@ -98,18 +129,253 @@ padding: 12px 0;
     left: 50%;
     transform: translate(-50%, -50%);
     color: var(--white);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: bold;
 }
 
-.actions svg {
+.trashIcon {
     height: 20px;
     width: 20px;
-    fill: var(--white);
+    color: var(--white);
     cursor: pointer;
-    transition: fill 0.3s ease;
+    transition: color 0.2s ease;
 }
 
-.actions svg:hover {
-    fill: #ff4444;
+.trashIcon:hover {
+    color: var(--danger);
+}
+
+/* Painel de métricas */
+.metrics {
+    padding: 25px;
+    height: calc(100vh - 80px);
+    box-sizing: border-box;
+    color: var(--white);
+    overflow-y: auto;
+}
+
+.metrics h2 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-top: 20px;
+    margin-bottom: 0;
+    color: var(--white);
+}
+
+.metricsEmpty {
+    padding: 25px;
+    height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.metricsEmpty p {
+    color: var(--light);
+    font-size: 16px;
+}
+
+/* Container de estatísticas */
+.infoContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 60px;
+    margin-top: 20px;
+    padding: 30px 0;
+    border-bottom: 1px solid var(--light);
+}
+
+/* Feature: Detalhes do dia selecionado */
+.dayDetails {
+    margin-top: 24px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--light);
+    min-height: 80px;
+}
+
+.dayTitle {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--white);
+    margin: 0 0 16px 0;
+    text-transform: capitalize;
+}
+
+.dayPlaceholder {
+    color: var(--light);
+    font-size: 14px;
+    text-align: center;
+    padding: 10px 0;
+}
+
+.dayContent {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.timeEntry {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.timeEntry svg {
+    flex-shrink: 0;
+}
+
+/* Status de hábito concluído */
+.habitCompleted {
+    background-color: rgba(34, 197, 94, 0.1);
+    border-left: 3px solid var(--success, #22c55e);
+}
+
+.iconCompleted {
+    color: var(--success, #22c55e);
+}
+
+/* Status de hábito não concluído */
+.habitNotCompleted {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-left: 3px solid var(--danger, #ef4444);
+}
+
+.iconNotCompleted {
+    color: var(--danger, #ef4444);
+}
+
+.timeRange {
+    flex: 1;
+    font-size: 14px;
+    color: var(--white);
+}
+
+.duration {
+    font-size: 14px;
+    color: var(--light);
+    min-width: 80px;
+    text-align: right;
+}
+
+/* Calendário customizado */
+.calendar {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.calendarHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 280px;
+    margin-bottom: 20px;
+}
+
+.calendarNav {
+    background: transparent;
+    border: none;
+    color: var(--white);
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.calendarNav:hover {
+    background-color: var(--info-hover);
+}
+
+.calendarTitle {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--white);
+    text-transform: capitalize;
+}
+
+.calendarWeekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    width: 100%;
+    max-width: 280px;
+    margin-bottom: 8px;
+}
+
+.weekday {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--light);
+    padding: 8px 0;
+}
+
+.calendarDays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    width: 100%;
+    max-width: 280px;
+}
+
+.calendarDay {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--white);
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 36px;
+    height: 36px;
+}
+
+.calendarDay:hover:not(:disabled) {
+    background-color: var(--info-hover);
+}
+
+.calendarDayOutside {
+    color: var(--neutral);
+    cursor: default;
+}
+
+.calendarDayOutside:hover {
+    background-color: transparent;
+}
+
+/* Dia completado - círculo azul */
+.calendarDayCompleted {
+    background-color: var(--info);
+    color: var(--white);
+    font-weight: 500;
+}
+
+.calendarDayCompleted:hover:not(:disabled) {
+    background-color: var(--info);
+    opacity: 0.9;
+}
+
+/* Dia selecionado */
+.calendarDaySelected {
+    border: 2px solid var(--white);
+}
+
+.calendarDayCompleted.calendarDaySelected {
+    border: 2px solid var(--white);
+    box-shadow: 0 0 0 2px var(--info);
 }

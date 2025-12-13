@@ -1,11 +1,16 @@
-import { PaperPlaneRightIcon, TrashIcon } from '@phosphor-icons/react';
+import { CaretLeft, CaretRight, CheckCircle, PaperPlaneRight, Trash, XCircle } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
-import { useEffect, useRef, useState } from 'react';
+import 'dayjs/locale/pt-br';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import ConfirmModal from '../../components/ConfirmModal';
 import Header from '../../components/HeadeFix';
+import Info from '../../components/Info';
 import api from '../../services/api';
 import styles from './styles.module.css';
+
+// Configurar dayjs para português
+dayjs.locale('pt-br');
 
 type CompletedDate = {
 	date: string; // Formato: YYYY-MM-DD
@@ -14,7 +19,7 @@ type CompletedDate = {
 type Habit = {
 	id: string;
 	name: string;
-	completed: CompletedDate[];
+	isCompleted: CompletedDate[];
 	userId: string;
 	createdAt: string;
 	updatedAt: string;
@@ -30,8 +35,26 @@ type BackendHabit = {
 	updatedAt: string;
 };
 
+type HabitMetrics = {
+	_id: string;
+	name: string;
+	isCompleted: CompletedDate[];
+};
+
+type HabitDayStatus = {
+	habit: Habit;
+	isCompleted: boolean;
+};
+
+// Dias da semana em português
+const WEEK_DAYS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+
 export default function HabitsPage() {
 	const [habits, setHabits] = useState<Habit[]>([]);
+	const [metrics, setMetrics] = useState<HabitMetrics | null>(null);
+	const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null);
+	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+	const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 	const [loading, setLoading] = useState(true);
 	const [deleting, setDeleting] = useState<string | null>(null);
 	const [toggling, setToggling] = useState<string | null>(null);
@@ -41,21 +64,138 @@ export default function HabitsPage() {
 		habitName: string;
 	}>({ isOpen: false, habitId: null, habitName: '' });
 	const nameInput = useRef<HTMLInputElement>(null);
+
 	// Usa formato YYYY-MM-DD para comparação consistente de datas
 	const today = dayjs().format('YYYY-MM-DD');
 
+	// Calcular métricas do hábito selecionado
+	const metricsInfo = useMemo(() => {
+		const numberOfMonthDays = dayjs(currentMonth).endOf('month').date();
+		const numberOfDays = metrics?.isCompleted?.length ?? 0;
+
+		const completedDatesPerMonth = `${numberOfDays}/${numberOfMonthDays}`;
+		const completionPercentage =
+			numberOfMonthDays > 0 ? `${Math.round((numberOfDays / numberOfMonthDays) * 100)}%` : '0%';
+
+		return {
+			completedDatesPerMonth,
+			completionPercentage,
+		};
+	}, [metrics, currentMonth]);
+
+	// Set de datas completadas para busca rápida
+	const completedDatesSet = useMemo(() => {
+		if (!metrics?.isCompleted) return new Set<string>();
+		return new Set(metrics.isCompleted.map((c) => dayjs(c.date).format('YYYY-MM-DD')));
+	}, [metrics]);
+
+	// Gerar dias do calendário
+	const calendarDays = useMemo(() => {
+		const startOfMonth = dayjs(currentMonth).startOf('month');
+		const endOfMonth = dayjs(currentMonth).endOf('month');
+		const startDay = startOfMonth.day(); // 0 = domingo
+		const daysInMonth = endOfMonth.date();
+
+		const days: Array<{ date: Date; day: number; isCurrentMonth: boolean; isCompleted: boolean }> = [];
+
+		// Dias do mês anterior
+		const prevMonth = startOfMonth.subtract(1, 'month');
+		const daysInPrevMonth = prevMonth.endOf('month').date();
+		for (let i = startDay - 1; i >= 0; i--) {
+			const day = daysInPrevMonth - i;
+			const date = prevMonth.date(day).toDate();
+			days.push({
+				date,
+				day,
+				isCurrentMonth: false,
+				isCompleted: false,
+			});
+		}
+
+		// Dias do mês atual
+		for (let day = 1; day <= daysInMonth; day++) {
+			const date = startOfMonth.date(day).toDate();
+			const dateStr = dayjs(date).format('YYYY-MM-DD');
+			days.push({
+				date,
+				day,
+				isCurrentMonth: true,
+				isCompleted: completedDatesSet.has(dateStr),
+			});
+		}
+
+		// Dias do próximo mês (completar 6 semanas)
+		const remainingDays = 42 - days.length;
+		const nextMonth = startOfMonth.add(1, 'month');
+		for (let day = 1; day <= remainingDays; day++) {
+			const date = nextMonth.date(day).toDate();
+			days.push({
+				date,
+				day,
+				isCurrentMonth: false,
+				isCompleted: false,
+			});
+		}
+
+		return days;
+	}, [currentMonth, completedDatesSet]);
+
+	// Formatar data selecionada
+	const selectedDateFormatted = useMemo(() => {
+		if (!selectedDate) return null;
+		return dayjs(selectedDate).format('D [de] MMMM');
+	}, [selectedDate]);
+
+	// Verificar se a data selecionada foi completada
+	const isSelectedDateCompleted = useMemo(() => {
+		if (!selectedDate) return false;
+		return completedDatesSet.has(dayjs(selectedDate).format('YYYY-MM-DD'));
+	}, [selectedDate, completedDatesSet]);
+
+	// Calcular status de TODOS os hábitos para a data selecionada
+	const allHabitsDayStatus = useMemo<HabitDayStatus[]>(() => {
+		if (!selectedDate) return [];
+		const dateStr = dayjs(selectedDate).format('YYYY-MM-DD');
+
+		return habits.map((habit) => {
+			const completedDates = Array.isArray(habit.isCompleted) ? habit.isCompleted : [];
+			const isCompleted = completedDates.some((c) => dayjs(c.date).format('YYYY-MM-DD') === dateStr);
+			return { habit, isCompleted };
+		});
+	}, [selectedDate, habits]);
+
+	// Buscar métricas do hábito
+	const fetchMetrics = useCallback(async (habit: Habit, month: Date) => {
+		try {
+			const { data } = await api.get<HabitMetrics>(`/habits/${habit.id}/metrics`, {
+				params: {
+					date: dayjs(month).startOf('month').toISOString(),
+				},
+			});
+			setMetrics(data);
+		} catch (error) {
+			console.error('Erro ao carregar métricas:', error);
+			toast.error('Erro ao carregar métricas do hábito');
+		}
+	}, []);
+
+	// Selecionar hábito
+	async function handleSelectHabit(habit: Habit) {
+		setSelectedHabit(habit);
+		setSelectedDate(null);
+		await fetchMetrics(habit, currentMonth);
+	}
+
+	// Carregar hábitos
 	async function loadHabits() {
 		try {
 			setLoading(true);
 			const response = await api.get<BackendHabit[]>('/habits');
 
-			// Normaliza os dados do backend (MongoDB) para o formato do frontend
-			// _id -> id, isCompleted -> completed
-			// Garante que as datas estejam no formato YYYY-MM-DD
 			const normalizedHabits: Habit[] = response.data.map((habit) => ({
 				id: habit._id,
 				name: habit.name,
-				completed: Array.isArray(habit.isCompleted)
+				isCompleted: Array.isArray(habit.isCompleted)
 					? habit.isCompleted.map((c) => ({
 							date: dayjs(c.date).format('YYYY-MM-DD'),
 						}))
@@ -68,18 +208,19 @@ export default function HabitsPage() {
 			setHabits(normalizedHabits);
 		} catch (error) {
 			console.error('Erro ao carregar hábitos:', error);
+			toast.error('Erro ao carregar hábitos');
 		} finally {
 			setLoading(false);
 		}
 	}
 
+	// Adicionar hábito
 	async function handleAddHabit() {
-		if (!nameInput.current) {
-			return;
-		}
+		if (!nameInput.current) return;
 
 		const habitName = nameInput.current.value.trim();
 		if (!habitName) {
+			toast.error('Digite o nome do hábito');
 			return;
 		}
 
@@ -94,67 +235,59 @@ export default function HabitsPage() {
 		}
 	}
 
-	async function handleToggleHabit(habitId: string) {
-		if (toggling !== null) {
-			return;
-		}
+	// Toggle hábito (marcar/desmarcar)
+	async function handleToggleHabit(habit: Habit, e: React.MouseEvent) {
+		e.stopPropagation();
+		if (toggling !== null) return;
 
 		try {
-			setToggling(habitId);
-			const habit = habits.find((h) => h.id === habitId);
-			if (!habit) {
-				return;
-			}
+			setToggling(habit.id);
 
-			// Garante que completed é um array
-			const completedDates = Array.isArray(habit.completed) ? habit.completed : [];
+			const completedDates = Array.isArray(habit.isCompleted) ? habit.isCompleted : [];
 			const isCompleted = completedDates.some((c) => c.date === today);
 
-			// Usa PATCH /habits/:id/toggle - o backend gerencia o toggle automaticamente
-			await api.patch(`/habits/${habitId}/toggle`);
+			await api.patch(`/habits/${habit.id}/toggle`);
 
-			// Atualiza estado local imediatamente baseado no estado anterior
-			if (isCompleted) {
-				// Remove a data da lista de completados
-				setHabits((prevHabits) =>
-					prevHabits.map((h) =>
-						h.id === habitId ? { ...h, completed: h.completed.filter((c) => c.date !== today) } : h
-					)
-				);
-			} else {
-				// Adiciona a data à lista de completados
-				setHabits((prevHabits) =>
-					prevHabits.map((h) => (h.id === habitId ? { ...h, completed: [...h.completed, { date: today }] } : h))
-				);
+			// Atualiza estado local imediatamente
+			setHabits((prevHabits) =>
+				prevHabits.map((h) => {
+					if (h.id !== habit.id) return h;
+
+					if (isCompleted) {
+						return { ...h, isCompleted: h.isCompleted.filter((c) => c.date !== today) };
+					}
+					return { ...h, isCompleted: [...h.isCompleted, { date: today }] };
+				})
+			);
+
+			// Atualiza métricas se o hábito selecionado for o mesmo
+			if (selectedHabit?.id === habit.id) {
+				await fetchMetrics(habit, currentMonth);
 			}
 		} catch (error: unknown) {
 			console.error('Erro ao alternar hábito:', error);
 
 			let errorMessage = 'Erro ao alternar hábito. Tente novamente.';
 			if (error && typeof error === 'object' && 'response' in error) {
-				const axiosError = error as { response?: { status?: number; data?: { message?: string } } };
+				const axiosError = error as { response?: { data?: { message?: string } } };
 				errorMessage = axiosError.response?.data?.message || errorMessage;
 			}
 
 			toast.error(errorMessage);
-			// Recarrega em caso de erro para sincronizar com o servidor
 			await loadHabits();
 		} finally {
 			setToggling(null);
 		}
 	}
 
-	function handleDeleteHabit(habitId: string) {
-		if (deleting !== null) {
-			return;
-		}
+	// Abrir modal de confirmação para deletar
+	function handleDeleteClick(habitId: string, e: React.MouseEvent) {
+		e.stopPropagation();
+		if (deleting !== null) return;
 
 		const habit = habits.find((h) => h.id === habitId);
-		if (!habit) {
-			return;
-		}
+		if (!habit) return;
 
-		// Abre o modal de confirmação
 		setConfirmModal({
 			isOpen: true,
 			habitId: habit.id,
@@ -162,29 +295,35 @@ export default function HabitsPage() {
 		});
 	}
 
+	// Confirmar exclusão
 	async function confirmDelete() {
 		const { habitId } = confirmModal;
-		if (!habitId) {
-			return;
-		}
+		if (!habitId) return;
 
 		try {
 			setDeleting(habitId);
 			await api.delete(`/habits/${habitId}`);
-			// Atualiza estado local imediatamente
+
 			setHabits((prevHabits) => prevHabits.filter((h) => h.id !== habitId));
+
+			// Limpar seleção se o hábito deletado estava selecionado
+			if (selectedHabit?.id === habitId) {
+				setSelectedHabit(null);
+				setMetrics(null);
+				setSelectedDate(null);
+			}
+
 			toast.success('Hábito excluído com sucesso!');
 		} catch (error: unknown) {
 			console.error('Erro ao deletar hábito:', error);
 
 			let errorMessage = 'Erro ao deletar hábito. Tente novamente.';
 			if (error && typeof error === 'object' && 'response' in error) {
-				const axiosError = error as { response?: { status?: number; data?: { message?: string } } };
+				const axiosError = error as { response?: { data?: { message?: string } } };
 				errorMessage = axiosError.response?.data?.message || errorMessage;
 			}
 
 			toast.error(errorMessage);
-			// Recarrega em caso de erro para sincronizar com o servidor
 			await loadHabits();
 		} finally {
 			setDeleting(null);
@@ -192,14 +331,40 @@ export default function HabitsPage() {
 		}
 	}
 
-	async function handleKeyPress(event: React.KeyboardEvent<HTMLInputElement>) {
+	// Tecla Enter no input
+	async function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
 		if (event.key === 'Enter') {
 			await handleAddHabit();
 		}
 	}
 
-	// Carrega os hábitos ao montar o componente
-	// biome-ignore lint/correctness/useExhaustiveDependencies: loadHabits não deve estar nas dependências
+	// Navegar para mês anterior
+	async function handlePrevMonth() {
+		const newMonth = dayjs(currentMonth).subtract(1, 'month').toDate();
+		setCurrentMonth(newMonth);
+		setSelectedDate(null);
+		if (selectedHabit) {
+			await fetchMetrics(selectedHabit, newMonth);
+		}
+	}
+
+	// Navegar para próximo mês
+	async function handleNextMonth() {
+		const newMonth = dayjs(currentMonth).add(1, 'month').toDate();
+		setCurrentMonth(newMonth);
+		setSelectedDate(null);
+		if (selectedHabit) {
+			await fetchMetrics(selectedHabit, newMonth);
+		}
+	}
+
+	// Selecionar dia no calendário
+	function handleSelectDate(date: Date, isCurrentMonth: boolean) {
+		if (!isCurrentMonth) return;
+		setSelectedDate(date);
+	}
+
+	// Carregar hábitos ao montar
 	useEffect(() => {
 		loadHabits();
 	}, []);
@@ -233,34 +398,41 @@ export default function HabitsPage() {
 				<div className={styles.content}>
 					<Header title="Hábitos Diários" />
 					<div className={styles.input}>
-						<input ref={nameInput} placeholder="Digite um novo hábito" type="text" onKeyPress={handleKeyPress} />
-						<PaperPlaneRightIcon onClick={handleAddHabit} />
+						<input ref={nameInput} placeholder="Digite um novo hábito" type="text" onKeyDown={handleKeyDown} />
+						<PaperPlaneRight onClick={handleAddHabit} className={styles.sendIcon} />
 					</div>
 					<div className={styles.habits}>
 						{loading ? (
-							<p>Carregando hábitos...</p>
+							<p className={styles.emptyMessage}>Carregando hábitos...</p>
 						) : habits.length === 0 ? (
-							<p>Nenhum hábito cadastrado ainda.</p>
+							<p className={styles.emptyMessage}>Nenhum hábito cadastrado ainda.</p>
 						) : (
 							habits.map((habit) => {
-								// Garante que completed é um array
-								const completedDates = Array.isArray(habit.completed) ? habit.completed : [];
+								const completedDates = Array.isArray(habit.isCompleted) ? habit.isCompleted : [];
 								const isCompleted = completedDates.some((c) => c.date === today);
 								const isBeingDeleted = deleting === habit.id;
 								const isBeingToggled = toggling === habit.id;
+								const isSelected = selectedHabit?.id === habit.id;
 
 								return (
-									<div key={habit.id} className={styles.habit} style={{ opacity: isBeingDeleted ? 0.5 : 1 }}>
+									<div
+										key={habit.id}
+										className={`${styles.habit} ${isSelected ? styles.habitActive : ''}`}
+										style={{ opacity: isBeingDeleted ? 0.5 : 1 }}
+										onClick={() => handleSelectHabit(habit)}
+									>
 										<p>{habit.name}</p>
 										<div className={styles.actions}>
 											<input
 												type="checkbox"
 												checked={isCompleted}
-												onChange={() => handleToggleHabit(habit.id)}
+												onChange={(e) => handleToggleHabit(habit, e as unknown as React.MouseEvent)}
+												onClick={(e) => e.stopPropagation()}
 												disabled={isBeingToggled || isBeingDeleted}
 											/>
-											<TrashIcon
-												onClick={() => handleDeleteHabit(habit.id)}
+											<Trash
+												onClick={(e) => handleDeleteClick(habit.id, e)}
+												className={styles.trashIcon}
 												style={{
 													cursor: isBeingDeleted ? 'not-allowed' : 'pointer',
 													opacity: isBeingDeleted ? 0.5 : 1,
@@ -273,7 +445,110 @@ export default function HabitsPage() {
 						)}
 					</div>
 				</div>
+
+				{selectedHabit ? (
+					<div className={styles.metrics}>
+						<h2>{selectedHabit.name}</h2>
+
+						{/* Estatísticas */}
+						<div className={styles.infoContainer}>
+							<Info value={metricsInfo.completedDatesPerMonth} label="Dias concluídos" />
+							<Info value={metricsInfo.completionPercentage} label="Porcentagem" />
+						</div>
+
+						{/* Feature: Detalhes do dia selecionado */}
+						<div className={styles.dayDetails}>
+							{selectedDate ? (
+								<>
+									<h3 className={styles.dayTitle}>{selectedDateFormatted}</h3>
+									<div className={styles.dayContent}>
+										{/* Mostrar o status do hábito selecionado destacado */}
+										<div className={`${styles.timeEntry} ${isSelectedDateCompleted ? styles.habitCompleted : styles.habitNotCompleted}`}>
+											{isSelectedDateCompleted ? (
+												<CheckCircle size={18} weight="fill" className={styles.iconCompleted} />
+											) : (
+												<XCircle size={18} weight="fill" className={styles.iconNotCompleted} />
+											)}
+											<span className={styles.timeRange}>{selectedHabit.name}</span>
+											<span className={styles.duration}>{isSelectedDateCompleted ? 'Concluído' : 'Não concluído'}</span>
+										</div>
+
+										{/* Mostrar status de todos os outros hábitos */}
+										{allHabitsDayStatus
+											.filter((item) => item.habit.id !== selectedHabit.id)
+											.map((item) => (
+												<div
+													key={item.habit.id}
+													className={`${styles.timeEntry} ${item.isCompleted ? styles.habitCompleted : styles.habitNotCompleted}`}
+												>
+													{item.isCompleted ? (
+														<CheckCircle size={18} weight="fill" className={styles.iconCompleted} />
+													) : (
+														<XCircle size={18} weight="fill" className={styles.iconNotCompleted} />
+													)}
+													<span className={styles.timeRange}>{item.habit.name}</span>
+													<span className={styles.duration}>{item.isCompleted ? 'Concluído' : 'Não concluído'}</span>
+												</div>
+											))}
+									</div>
+								</>
+							) : (
+								<p className={styles.dayPlaceholder}>Clique em um dia do calendário</p>
+							)}
+						</div>
+
+						{/* Calendário customizado */}
+						<div className={styles.calendar}>
+							<div className={styles.calendarHeader}>
+								<button type="button" onClick={handlePrevMonth} className={styles.calendarNav}>
+									<CaretLeft size={20} weight="bold" />
+								</button>
+								<span className={styles.calendarTitle}>{dayjs(currentMonth).format('MMMM YYYY')}</span>
+								<button type="button" onClick={handleNextMonth} className={styles.calendarNav}>
+									<CaretRight size={20} weight="bold" />
+								</button>
+							</div>
+
+							<div className={styles.calendarWeekdays}>
+								{WEEK_DAYS.map((day, index) => (
+									<span key={`weekday-${index}`} className={styles.weekday}>
+										{day}
+									</span>
+								))}
+							</div>
+
+							<div className={styles.calendarDays}>
+								{calendarDays.map((dayInfo, index) => {
+									const isSelected =
+										selectedDate &&
+										dayjs(selectedDate).format('YYYY-MM-DD') === dayjs(dayInfo.date).format('YYYY-MM-DD');
+
+									return (
+										<button
+											key={`day-${index}`}
+											type="button"
+											className={`${styles.calendarDay} ${
+												!dayInfo.isCurrentMonth ? styles.calendarDayOutside : ''
+											} ${dayInfo.isCompleted ? styles.calendarDayCompleted : ''} ${
+												isSelected ? styles.calendarDaySelected : ''
+											}`}
+											onClick={() => handleSelectDate(dayInfo.date, dayInfo.isCurrentMonth)}
+											disabled={!dayInfo.isCurrentMonth}
+										>
+											{dayInfo.day}
+										</button>
+									);
+								})}
+							</div>
+						</div>
+					</div>
+				) : (
+					<div className={styles.metricsEmpty}>
+						<p>Selecione um hábito para ver as métricas</p>
+					</div>
+				)}
 			</div>
+
 			<ConfirmModal
 				isOpen={confirmModal.isOpen}
 				onClose={() => setConfirmModal({ isOpen: false, habitId: null, habitName: '' })}

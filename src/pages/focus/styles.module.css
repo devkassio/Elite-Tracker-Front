@@ -1,147 +1,295 @@
-    .container {
-        background-color: var(--dark-blue);
-        min-height: 100vh;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-    }
+.container {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 2rem;
+	padding: 2rem;
+	min-height: 100vh;
+	background-color: var(--dark-blue);
+}
 
-    .content {
-        max-width: 800px;
-        padding: 25px;
-        border-right: 1px solid var(--light);
-        min-height: 100vh;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-    }
+/* Timer Section - Left Side */
+.timerSection {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
 
-    .input-group {
-        display: flex;
-        max-width: 500px;
-        width: 100%;
-        gap: 24px;
-        margin-top: 40px;
-        margin-left: auto;
-        margin-right: auto;
-    }
+.inputGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	background-color: var(--light-bg, #0a1f2a);
+	padding: 1.5rem;
+	border-radius: 8px;
+	border: 1px solid var(--border, #1a3545);
+}
 
-    .time-control {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-        flex: 1;
-    }
+.timeControl {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
 
-    .label {
-        color: var(--white);
-        font-size: 14px;
-        font-weight: 500;
-    }
+.label {
+	font-size: 0.95rem;
+	color: var(--light);
+}
 
-    .time-buttons {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        background-color: var(--dark-light-blue);
-        border-radius: 8px;
-        padding: 12px 16px;
-    }
+.timeButtons {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
 
-    .time-buttons button {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border: none;
-        border-radius: 50%;
-        background-color: var(--info);
-        cursor: pointer;
-        transition: background-color 0.2s ease, opacity 0.2s ease;
-    }
+.timeButtons button {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	border: 1px solid var(--info);
+	background-color: transparent;
+	color: var(--info);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
 
-    .time-buttons button:hover:not(:disabled) {
-        background-color: var(--info-hover, #0056b3);
-    }
+.timeButtons button:hover:not(:disabled) {
+	background-color: var(--info);
+	color: white;
+}
 
-    .time-buttons button:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
+.timeButtons button:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
 
-    .time-buttons button svg {
-        fill: var(--white);
-    }
+.timeButtons span {
+	min-width: 60px;
+	text-align: center;
+	font-size: 0.95rem;
+	color: white;
+}
 
-    .time-buttons span {
-        color: var(--white);
-        font-size: 20px;
-        font-weight: 600;
-        min-width: 70px;
-        text-align: center;
-    }
+.timerContainer {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2rem;
+	padding: 2rem 0;
+}
 
-    /* Timer Section - Centralizado */
-    .timer-section {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 24px;
-        margin-top: 80px;
-    }
+.timer {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 260px;
+	height: 260px;
+}
 
-    .timer {
-        position: relative;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 280px;
-        height: 280px;
-    }
+.progressRing {
+	position: absolute;
+	transform: rotate(-90deg);
+}
 
-    .progress-ring {
-        position: absolute;
-        top: 0;
-        left: 0;
-        transform: rotate(-90deg);
-    }
+.progressRingCircle {
+	transition: stroke-dashoffset 0.3s ease;
+}
 
-    .progress-ring-bg {
-        opacity: 0.3;
-    }
+.timerText {
+	font-size: 3.5rem;
+	font-weight: 700;
+	color: white;
+	font-family: 'Segoe UI', system-ui, sans-serif;
+	letter-spacing: 2px;
+}
 
-    .progress-ring-circle {
-        transition: stroke-dashoffset 0.5s ease;
-    }
+.buttonGroup {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.75rem;
+}
 
-    .timer-text {
-        font-size: 56px;
-        color: var(--white);
-        font-weight: 300;
-        font-variant-numeric: tabular-nums;
-        z-index: 1;
-    }
+/* Stats Section - Right Side */
+.statsSection {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
 
-    .timer span {
-        font-size: 56px;
-        color: var(--white);
-        font-weight: 300;
-        font-variant-numeric: tabular-nums;
-    }
+.statsTitle {
+	font-size: 1.5rem;
+	font-weight: 600;
+	color: white;
+	margin: 0;
+	padding-bottom: 0.5rem;
+	border-bottom: 2px solid var(--info);
+}
 
-    .button-group {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-        max-width: 220px;
-        gap: 8px;
-    }
+.infoContainer {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1rem;
+}
 
-    .button-group button {
-        margin-top: 8px;
-    }
+/* Day Details Feature */
+.dayDetails {
+	background-color: var(--light-bg, #0a1f2a);
+	border-radius: 8px;
+	padding: 1rem;
+	border: 1px solid var(--border, #1a3545);
+}
+
+.dayTitle {
+	font-size: 1.1rem;
+	font-weight: 600;
+	color: white;
+	margin: 0 0 0.75rem 0;
+	text-transform: capitalize;
+}
+
+.dayContent {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	max-height: 200px;
+	overflow-y: auto;
+}
+
+.timeEntry {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.5rem 0.75rem;
+	background-color: rgba(1, 107, 248, 0.1);
+	border-radius: 6px;
+	border-left: 3px solid var(--info);
+}
+
+.timeEntry svg {
+	color: var(--info);
+	flex-shrink: 0;
+}
+
+.timeRange {
+	font-size: 0.9rem;
+	color: white;
+	flex: 1;
+}
+
+.duration {
+	font-size: 0.85rem;
+	color: var(--light);
+}
+
+/* Calendar */
+.calendar {
+	background-color: var(--light-bg, #0a1f2a);
+	border-radius: 8px;
+	padding: 1rem;
+	border: 1px solid var(--border, #1a3545);
+}
+
+.calendarHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+
+.calendarNav {
+	background: transparent;
+	border: none;
+	color: var(--info);
+	cursor: pointer;
+	padding: 0.5rem;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background-color 0.2s ease;
+}
+
+.calendarNav:hover {
+	background-color: rgba(1, 107, 248, 0.15);
+}
+
+.calendarTitle {
+	font-size: 1rem;
+	font-weight: 600;
+	color: white;
+	text-transform: capitalize;
+}
+
+.calendarWeekdays {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 4px;
+	margin-bottom: 8px;
+}
+
+.weekday {
+	text-align: center;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--light);
+	padding: 4px 0;
+}
+
+.calendarDays {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 4px;
+}
+
+.calendarDay {
+	aspect-ratio: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.85rem;
+	color: white;
+	background: transparent;
+	border: none;
+	border-radius: 50%;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.calendarDay:hover:not(:disabled) {
+	background-color: rgba(1, 107, 248, 0.2);
+}
+
+.calendarDayOutside {
+	color: var(--light);
+	opacity: 0.4;
+	cursor: default;
+}
+
+.calendarDayCompleted {
+	background-color: var(--info) !important;
+	color: white !important;
+}
+
+.calendarDayCompleted:hover:not(:disabled) {
+	background-color: var(--info-hover) !important;
+}
+
+.calendarDaySelected {
+	box-shadow: 0 0 0 2px var(--info);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+	.container {
+		grid-template-columns: 1fr;
+		padding: 1rem;
+	}
+
+	.infoContainer {
+		grid-template-columns: 1fr;
+	}
+}
