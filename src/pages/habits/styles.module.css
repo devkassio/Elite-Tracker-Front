@@ -209,6 +209,16 @@
     padding: 10px 0;
 }
 
+.noHabitsMessage {
+    color: var(--light);
+    font-size: 14px;
+    text-align: center;
+    padding: 20px 10px;
+    margin: 0;
+    background-color: rgba(130, 130, 130, 0.1);
+    border-radius: 6px;
+}
+
 .dayContent {
     display: flex;
     flex-direction: column;

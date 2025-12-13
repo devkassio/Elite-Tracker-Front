@@ -44,6 +44,7 @@ type HabitMetrics = {
 type HabitDayStatus = {
 	habit: Habit;
 	isCompleted: boolean;
+	existedOnDate: boolean; // Se o hábito já existia na data selecionada
 };
 
 // Dias da semana em português
@@ -146,21 +147,20 @@ export default function HabitsPage() {
 		return dayjs(selectedDate).format('D [de] MMMM');
 	}, [selectedDate]);
 
-	// Verificar se a data selecionada foi completada
-	const isSelectedDateCompleted = useMemo(() => {
-		if (!selectedDate) return false;
-		return completedDatesSet.has(dayjs(selectedDate).format('YYYY-MM-DD'));
-	}, [selectedDate, completedDatesSet]);
-
 	// Calcular status de TODOS os hábitos para a data selecionada
+	// Só mostra hábitos que já existiam na data selecionada (baseado em createdAt)
 	const allHabitsDayStatus = useMemo<HabitDayStatus[]>(() => {
 		if (!selectedDate) return [];
 		const dateStr = dayjs(selectedDate).format('YYYY-MM-DD');
+		const selectedDateStart = dayjs(selectedDate).startOf('day');
 
 		return habits.map((habit) => {
 			const completedDates = Array.isArray(habit.isCompleted) ? habit.isCompleted : [];
 			const isCompleted = completedDates.some((c) => dayjs(c.date).format('YYYY-MM-DD') === dateStr);
-			return { habit, isCompleted };
+			// Verificar se o hábito já existia na data selecionada
+			const habitCreatedAt = dayjs(habit.createdAt).startOf('day');
+			const existedOnDate = selectedDateStart.isAfter(habitCreatedAt) || selectedDateStart.isSame(habitCreatedAt);
+			return { habit, isCompleted, existedOnDate };
 		});
 	}, [selectedDate, habits]);
 
@@ -462,34 +462,27 @@ export default function HabitsPage() {
 								<>
 									<h3 className={styles.dayTitle}>{selectedDateFormatted}</h3>
 									<div className={styles.dayContent}>
-										{/* Mostrar o status do hábito selecionado destacado */}
-										<div className={`${styles.timeEntry} ${isSelectedDateCompleted ? styles.habitCompleted : styles.habitNotCompleted}`}>
-											{isSelectedDateCompleted ? (
-												<CheckCircle size={18} weight="fill" className={styles.iconCompleted} />
-											) : (
-												<XCircle size={18} weight="fill" className={styles.iconNotCompleted} />
-											)}
-											<span className={styles.timeRange}>{selectedHabit.name}</span>
-											<span className={styles.duration}>{isSelectedDateCompleted ? 'Concluído' : 'Não concluído'}</span>
-										</div>
-
-										{/* Mostrar status de todos os outros hábitos */}
-										{allHabitsDayStatus
-											.filter((item) => item.habit.id !== selectedHabit.id)
-											.map((item) => (
-												<div
-													key={item.habit.id}
-													className={`${styles.timeEntry} ${item.isCompleted ? styles.habitCompleted : styles.habitNotCompleted}`}
-												>
-													{item.isCompleted ? (
-														<CheckCircle size={18} weight="fill" className={styles.iconCompleted} />
-													) : (
-														<XCircle size={18} weight="fill" className={styles.iconNotCompleted} />
-													)}
-													<span className={styles.timeRange}>{item.habit.name}</span>
-													<span className={styles.duration}>{item.isCompleted ? 'Concluído' : 'Não concluído'}</span>
-												</div>
-											))}
+										{/* Filtrar apenas hábitos que existiam na data selecionada */}
+										{allHabitsDayStatus.filter((item) => item.existedOnDate).length > 0 ? (
+											allHabitsDayStatus
+												.filter((item) => item.existedOnDate)
+												.map((item) => (
+													<div
+														key={item.habit.id}
+														className={`${styles.timeEntry} ${item.isCompleted ? styles.habitCompleted : styles.habitNotCompleted}`}
+													>
+														{item.isCompleted ? (
+															<CheckCircle size={18} weight="fill" className={styles.iconCompleted} />
+														) : (
+															<XCircle size={18} weight="fill" className={styles.iconNotCompleted} />
+														)}
+														<span className={styles.timeRange}>{item.habit.name}</span>
+														<span className={styles.duration}>{item.isCompleted ? 'Concluído' : 'Não concluído'}</span>
+													</div>
+												))
+										) : (
+											<p className={styles.noHabitsMessage}>Nenhum hábito existia nesta data</p>
+										)}
 									</div>
 								</>
 							) : (
