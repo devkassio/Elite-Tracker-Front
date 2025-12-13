@@ -69,6 +69,9 @@ export default function HabitsPage() {
 	// Usa formato YYYY-MM-DD para comparação consistente de datas
 	const today = dayjs().format('YYYY-MM-DD');
 
+	// Data de hoje para comparações
+	const todayStart = useMemo(() => dayjs().startOf('day'), []);
+
 	// Calcular métricas do hábito selecionado
 	const metricsInfo = useMemo(() => {
 		const numberOfMonthDays = dayjs(currentMonth).endOf('month').date();
@@ -97,7 +100,7 @@ export default function HabitsPage() {
 		const startDay = startOfMonth.day(); // 0 = domingo
 		const daysInMonth = endOfMonth.date();
 
-		const days: Array<{ date: Date; day: number; isCurrentMonth: boolean; isCompleted: boolean }> = [];
+		const days: Array<{ date: Date; day: number; isCurrentMonth: boolean; isCompleted: boolean; isFuture: boolean }> = [];
 
 		// Dias do mês anterior
 		const prevMonth = startOfMonth.subtract(1, 'month');
@@ -110,6 +113,7 @@ export default function HabitsPage() {
 				day,
 				isCurrentMonth: false,
 				isCompleted: false,
+				isFuture: false,
 			});
 		}
 
@@ -117,11 +121,13 @@ export default function HabitsPage() {
 		for (let day = 1; day <= daysInMonth; day++) {
 			const date = startOfMonth.date(day).toDate();
 			const dateStr = dayjs(date).format('YYYY-MM-DD');
+			const isFuture = dayjs(date).startOf('day').isAfter(todayStart);
 			days.push({
 				date,
 				day,
 				isCurrentMonth: true,
 				isCompleted: completedDatesSet.has(dateStr),
+				isFuture,
 			});
 		}
 
@@ -135,11 +141,12 @@ export default function HabitsPage() {
 				day,
 				isCurrentMonth: false,
 				isCompleted: false,
+				isFuture: true,
 			});
 		}
 
 		return days;
-	}, [currentMonth, completedDatesSet]);
+	}, [currentMonth, completedDatesSet, todayStart]);
 
 	// Formatar data selecionada
 	const selectedDateFormatted = useMemo(() => {
@@ -147,22 +154,33 @@ export default function HabitsPage() {
 		return dayjs(selectedDate).format('D [de] MMMM');
 	}, [selectedDate]);
 
+	// Verificar se a data selecionada é futura (não permitido)
+	const isSelectedDateFuture = useMemo(() => {
+		if (!selectedDate) return false;
+		return dayjs(selectedDate).startOf('day').isAfter(todayStart);
+	}, [selectedDate, todayStart]);
+
 	// Calcular status de TODOS os hábitos para a data selecionada
 	// Só mostra hábitos que já existiam na data selecionada (baseado em createdAt)
+	// NÃO mostra nada para datas futuras
 	const allHabitsDayStatus = useMemo<HabitDayStatus[]>(() => {
 		if (!selectedDate) return [];
+		
+		// Datas futuras não têm dados
+		if (isSelectedDateFuture) return [];
+		
 		const dateStr = dayjs(selectedDate).format('YYYY-MM-DD');
 		const selectedDateStart = dayjs(selectedDate).startOf('day');
 
 		return habits.map((habit) => {
 			const completedDates = Array.isArray(habit.isCompleted) ? habit.isCompleted : [];
 			const isCompleted = completedDates.some((c) => dayjs(c.date).format('YYYY-MM-DD') === dateStr);
-			// Verificar se o hábito já existia na data selecionada
+			// Verificar se o hábito já existia na data selecionada (criado antes ou no mesmo dia)
 			const habitCreatedAt = dayjs(habit.createdAt).startOf('day');
-			const existedOnDate = selectedDateStart.isAfter(habitCreatedAt) || selectedDateStart.isSame(habitCreatedAt);
+			const existedOnDate = selectedDateStart.isSame(habitCreatedAt) || selectedDateStart.isAfter(habitCreatedAt);
 			return { habit, isCompleted, existedOnDate };
 		});
-	}, [selectedDate, habits]);
+	}, [selectedDate, habits, isSelectedDateFuture]);
 
 	// Buscar métricas do hábito
 	const fetchMetrics = useCallback(async (habit: Habit, month: Date) => {
@@ -462,8 +480,10 @@ export default function HabitsPage() {
 								<>
 									<h3 className={styles.dayTitle}>{selectedDateFormatted}</h3>
 									<div className={styles.dayContent}>
-										{/* Filtrar apenas hábitos que existiam na data selecionada */}
-										{allHabitsDayStatus.filter((item) => item.existedOnDate).length > 0 ? (
+										{/* Data futura - não pode ter dados */}
+										{isSelectedDateFuture ? (
+											<p className={styles.noHabitsMessage}>Data futura - sem registros</p>
+										) : allHabitsDayStatus.filter((item) => item.existedOnDate).length > 0 ? (
 											allHabitsDayStatus
 												.filter((item) => item.existedOnDate)
 												.map((item) => (
@@ -524,9 +544,9 @@ export default function HabitsPage() {
 												!dayInfo.isCurrentMonth ? styles.calendarDayOutside : ''
 											} ${dayInfo.isCompleted ? styles.calendarDayCompleted : ''} ${
 												isSelected ? styles.calendarDaySelected : ''
-											}`}
+											} ${dayInfo.isFuture ? styles.calendarDayFuture : ''}`}
 											onClick={() => handleSelectDate(dayInfo.date, dayInfo.isCurrentMonth)}
-											disabled={!dayInfo.isCurrentMonth}
+											disabled={!dayInfo.isCurrentMonth || dayInfo.isFuture}
 										>
 											{dayInfo.day}
 										</button>

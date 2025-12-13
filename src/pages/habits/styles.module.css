@@ -389,3 +389,9 @@
     border: 2px solid var(--white);
     box-shadow: 0 0 0 2px var(--info);
 }
+/* Dia futuro - não selecionável */
+.calendarDayFuture {
+    color: var(--light);
+    opacity: 0.3;
+    cursor: not-allowed;
+}
