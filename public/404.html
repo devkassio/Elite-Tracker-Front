@@ -4,15 +4,13 @@
   <meta charset="utf-8">
   <title>Elite Tracker</title>
   <script type="text/javascript">
-    // Single Page Apps para GitHub Pages
-    // https://github.com/rafgraph/spa-github-pages
-    // Redireciona para index.html com o path na query string
-    var pathSegmentsToKeep = 1;
+    // Redireciona para index.html com o path preservado
+    var segmentCount = 1;
     var l = window.location;
     l.replace(
       l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-      l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
-      l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+      l.pathname.split('/').slice(0, 1 + segmentCount).join('/') + '/#' +
+      l.pathname.slice(1).split('/').slice(segmentCount).join('/').replace(/&/g, '~and~') +
       (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
       l.hash
     );
