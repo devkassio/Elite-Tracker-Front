@@ -46,7 +46,7 @@ export default function AuthPage() {
 					setWelcomeName(userData.name);
 					setShowWelcome(true);
 					setTimeout(() => {
-						window.location.href = '/#/';
+						navigate('/', { replace: true });
 					}, 1500);
 					return;
 				}

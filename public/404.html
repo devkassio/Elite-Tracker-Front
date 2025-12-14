@@ -5,16 +5,10 @@
   <meta charset="utf-8">
   <title>Elite Tracker</title>
   <script type="text/javascript">
-    // Redireciona para index.html com o path preservado
-    var segmentCount = 1;
-    var l = window.location;
-    l.replace(
-      l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-      l.pathname.split('/').slice(0, 1 + segmentCount).join('/') + '/#' +
-      l.pathname.slice(1).split('/').slice(segmentCount).join('/').replace(/&/g, '~and~') +
-      (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-      l.hash
-    );
+    // Solução SPA para GitHub Pages
+    // Salva o path atual e redireciona para index.html
+    sessionStorage.setItem('redirectPath', window.location.pathname + window.location.search);
+    window.location.replace('/Elite-Tracker-Front/');
   </script>
 </head>
 

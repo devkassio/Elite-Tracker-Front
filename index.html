@@ -12,17 +12,16 @@
 
   <!-- Single Page Apps para GitHub Pages -->
   <script type="text/javascript">
-    // Restaura a URL original do redirecionamento do 404.html
-    (function (l) {
-      if (l.search[1] === '/') {
-        var decoded = l.search.slice(1).split('&').map(function (s) {
-          return s.replace(/~and~/g, '&')
-        }).join('?');
-        window.history.replaceState(null, null,
-          l.pathname.slice(0, -1) + decoded + l.hash
-        );
+    // Restaura o path salvo pelo 404.html
+    (function() {
+      var redirectPath = sessionStorage.getItem('redirectPath');
+      if (redirectPath) {
+        sessionStorage.removeItem('redirectPath');
+        var basePath = '/Elite-Tracker-Front';
+        var cleanPath = redirectPath.replace(basePath, '') || '/';
+        window.history.replaceState(null, null, basePath + cleanPath);
       }
-    }(window.location))
+    })();
   </script>
 </head>
 
