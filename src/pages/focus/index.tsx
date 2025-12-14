@@ -344,17 +344,27 @@ export default function Focus() {
 						if (sessionStart) {
 							saveTime(sessionStart, mode).then(() => {
 								setSessionStart(null);
+								
+								// Muda para o próximo modo mas NÃO inicia automaticamente
 								if (mode === 'focus') {
+									toast.success('Foco completo! Clique em "Começar Descanso" quando estiver pronto.');
 									setMode('rest');
-									setTotalTime(restTime * 60);
+									const restTimeSeconds = restTime * 60;
+									setTimeLeft(restTimeSeconds);
+									setTotalTime(restTimeSeconds);
 								} else {
+									toast.success('Descanso completo! Clique em "Começar Foco" quando estiver pronto.');
 									setMode('focus');
-									setTotalTime(focusTime * 60);
+									const focusTimeSeconds = focusTime * 60;
+									setTimeLeft(focusTimeSeconds);
+									setTotalTime(focusTimeSeconds);
 								}
+								
+								// Define status como idle para aguardar ação do usuário
 								setStatus('idle');
 							});
 						}
-						return mode === 'focus' ? restTime * 60 : focusTime * 60;
+						return 0;
 					}
 					return prev - 1;
 				});
