@@ -344,7 +344,7 @@ export default function Focus() {
 						if (sessionStart) {
 							saveTime(sessionStart, mode).then(() => {
 								setSessionStart(null);
-								
+
 								// Muda para o próximo modo mas NÃO inicia automaticamente
 								if (mode === 'focus') {
 									toast.success('Foco completo! Clique em "Começar Descanso" quando estiver pronto.');
@@ -359,7 +359,7 @@ export default function Focus() {
 									setTimeLeft(focusTimeSeconds);
 									setTotalTime(focusTimeSeconds);
 								}
-								
+
 								// Define status como idle para aguardar ação do usuário
 								setStatus('idle');
 							});

@@ -132,8 +132,12 @@ export default function HabitsPage() {
 			});
 		}
 
-		// Dias do próximo mês (completar 6 semanas)
-		const remainingDays = 42 - days.length;
+		// Dias do próximo mês (completar no máximo 5 semanas)
+		const totalDays = days.length;
+		// Se já temos mais de 28 dias, completar até 35 (5 semanas)
+		// Se temos 28 ou menos, não adicionar dias extras
+		const targetDays = totalDays > 28 ? 35 : totalDays;
+		const remainingDays = Math.max(0, targetDays - days.length);
 		const nextMonth = startOfMonth.add(1, 'month');
 		for (let day = 1; day <= remainingDays; day++) {
 			const date = nextMonth.date(day).toDate();
