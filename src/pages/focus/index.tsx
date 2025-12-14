@@ -265,7 +265,7 @@ export default function Focus() {
 			setTimeLeft(focusTime * 60);
 			setTotalTime(focusTime * 60);
 			setSessionStart(null);
-			
+
 			// Libera o flag após 500ms
 			setTimeout(() => {
 				cancelingRef.current = false;
