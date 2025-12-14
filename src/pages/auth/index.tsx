@@ -9,6 +9,7 @@ export default function AuthPage() {
 	const { userData, getUserInfo, loading, error } = useUser();
 	const [localError, setLocalError] = useState<string | null>(null);
 	const [showWelcome, setShowWelcome] = useState(false);
+	const [welcomeName, setWelcomeName] = useState<string>('');
 	const hasProcessed = useRef(false);
 
 	useEffect(() => {
@@ -24,13 +25,29 @@ export default function AuthPage() {
 				if (dataParam) {
 					// Processar dados do callback direto
 					hasProcessed.current = true;
-					const userData = JSON.parse(decodeURIComponent(dataParam));
+					const authData = JSON.parse(decodeURIComponent(dataParam));
 
-					// Salvar no localStorage
-					localStorage.setItem('elite-tracker-user', JSON.stringify(userData));
+					// Mapear para o formato correto do frontend
+					const userData = {
+						id: authData.nodeId,
+						name: authData.name,
+						avatar_url: authData.avatarUrl,
+						token: authData.token,
+					};
 
+					// Salvar no localStorage com as chaves corretas
+					localStorage.setItem('@elitetracker:user', JSON.stringify(userData));
+					localStorage.setItem('@elitetracker:token', userData.token);
+
+					// Configurar token no axios
+					const api = (await import('../../services/api')).default;
+					api.defaults.headers.common.Authorization = `Bearer ${userData.token}`;
+
+					setWelcomeName(userData.name);
 					setShowWelcome(true);
-					setTimeout(() => navigate('/', { replace: true }), 2000);
+					setTimeout(() => {
+						window.location.href = '/#/';
+					}, 1500);
 					return;
 				}
 
@@ -53,7 +70,8 @@ export default function AuthPage() {
 
 				setShowWelcome(true);
 				setTimeout(() => navigate('/', { replace: true }), 2000);
-			} catch {
+			} catch (err) {
+				console.error('Erro na autenticação:', err);
 				setLocalError('Falha na autenticação. Redirecionando para login...');
 				setTimeout(() => navigate('/login', { replace: true }), 3000);
 			}
@@ -73,10 +91,10 @@ export default function AuthPage() {
 		);
 	}
 
-	if (showWelcome && userData) {
+	if (showWelcome) {
 		return (
 			<div className={styles.container}>
-				<h1>Bem-vindo, {userData.name}! ✨</h1>
+				<h1>Bem-vindo, {welcomeName || userData?.name || 'Usuário'}! ✨</h1>
 				<p>Redirecionando...</p>
 			</div>
 		);
