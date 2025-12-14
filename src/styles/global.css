@@ -32,17 +32,35 @@ body {
     width: 100%;
 }
 
+/* Suporte para iOS e Android - Dynamic Viewport Height */
+body {
+    height: 100vh; /* Fallback */
+    height: 100dvh; /* Dynamic viewport height - iOS Safari */
+}
+
+#root {
+    height: 100vh; /* Fallback */
+    height: 100dvh; /* Dynamic viewport height */
+}
+
 /* Desktop: sem scroll na página principal */
 @media (min-width: 769px) {
     body {
         overflow: hidden;
         height: 100vh;
+        height: 100dvh;
     }
     
     #root {
         height: 100vh;
+        height: 100dvh;
         overflow: hidden;
     }
+}
+
+/* Prevenir zoom em inputs no iOS */
+input, textarea, select {
+    font-size: 16px !important;
 }
 
 button {

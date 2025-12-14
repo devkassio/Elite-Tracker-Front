@@ -9,6 +9,7 @@
 @media (min-width: 769px) {
     .container {
         height: 100vh;
+        height: 100dvh; /* Dynamic viewport height */
         overflow: hidden;
     }
 }
@@ -30,6 +31,7 @@
 @media (min-width: 769px) {
     .content {
         height: 100vh;
+        height: 100dvh; /* Dynamic viewport height */
         overflow-y: auto;
         overflow-x: hidden;
     }

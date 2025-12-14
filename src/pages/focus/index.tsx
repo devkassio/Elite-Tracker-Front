@@ -240,16 +240,37 @@ export default function Focus() {
 		setStatus('running');
 	}, []);
 
+	const cancelingRef = useRef(false);
+
 	const handleCancel = useCallback(async () => {
-		if (status === 'running' && sessionStart) {
-			await saveTime(sessionStart, mode);
+		// Previne cliques duplos
+		if (cancelingRef.current) {
+			return;
 		}
-		clearTimer();
-		setStatus('idle');
-		setMode('focus');
-		setTimeLeft(focusTime * 60);
-		setTotalTime(focusTime * 60);
-		setSessionStart(null);
+
+		cancelingRef.current = true;
+
+		try {
+			// Salva apenas se estiver rodando E tiver uma sessão ativa
+			if (status === 'running' && sessionStart) {
+				await saveTime(sessionStart, mode);
+			}
+		} catch (error) {
+			console.error('Erro ao cancelar:', error);
+		} finally {
+			// Limpa imediatamente sem delay
+			clearTimer();
+			setStatus('idle');
+			setMode('focus');
+			setTimeLeft(focusTime * 60);
+			setTotalTime(focusTime * 60);
+			setSessionStart(null);
+			
+			// Libera o flag após 500ms
+			setTimeout(() => {
+				cancelingRef.current = false;
+			}, 500);
+		}
 	}, [clearTimer, focusTime, status, mode, sessionStart, saveTime]);
 
 	const handleStartRest = useCallback(async () => {

@@ -11,6 +11,7 @@
 @media (min-width: 769px) {
 	.container {
 		height: 100vh;
+		height: 100dvh; /* Dynamic viewport height para iOS/Android */
 		overflow: hidden;
 	}
 }
@@ -37,6 +38,7 @@
 @media (min-width: 769px) {
 	.timerSection {
 		height: 100vh;
+		height: 100dvh; /* Dynamic viewport height */
 		overflow-y: auto;
 		overflow-x: hidden;
 	}
@@ -185,6 +187,7 @@
 @media (min-width: 769px) {
 	.statsSection {
 		height: 100vh;
+		height: 100dvh; /* Dynamic viewport height */
 		overflow-y: auto;
 		overflow-x: hidden;
 	}
