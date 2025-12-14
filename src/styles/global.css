@@ -24,6 +24,13 @@ body {
     color: #333;
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
+    overflow: hidden;
+    height: 100vh;
+}
+
+#root {
+    height: 100vh;
+    overflow: hidden;
 }
 
 button {

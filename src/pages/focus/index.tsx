@@ -56,7 +56,7 @@ export default function Focus() {
 		return dayjs(selectedDate).startOf('day').isAfter(todayDate);
 	}, [selectedDate, todayDate]);
 
-	const CIRCLE_RADIUS = 120;
+	const CIRCLE_RADIUS = 100;
 	const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
 	const progress = totalTime > 0 ? timeLeft / totalTime : 1;
 	const strokeDashoffset = CIRCLE_CIRCUMFERENCE * (1 - progress);
