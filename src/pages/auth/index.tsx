@@ -20,15 +20,15 @@ export default function AuthPage() {
 			try {
 				// Verificar se já recebemos os dados do usuário diretamente
 				const dataParam = searchParams.get('data');
-				
+
 				if (dataParam) {
 					// Processar dados do callback direto
 					hasProcessed.current = true;
 					const userData = JSON.parse(decodeURIComponent(dataParam));
-					
+
 					// Salvar no localStorage
 					localStorage.setItem('elite-tracker-user', JSON.stringify(userData));
-					
+
 					setShowWelcome(true);
 					setTimeout(() => navigate('/', { replace: true }), 2000);
 					return;
