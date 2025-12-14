@@ -67,3 +67,49 @@
 .logout svg {
     fill: inherit;
 }
+
+/* Mobile: Sidebar vira bottom navigation */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: 70px;
+        flex-direction: row;
+        justify-content: space-around;
+        padding: 10px 15px;
+        z-index: 1000;
+        border-top: 1px solid var(--light);
+    }
+
+    .sidebar img {
+        width: 36px;
+        height: 36px;
+    }
+
+    .links {
+        margin-top: 0;
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .link {
+        padding: 10px;
+    }
+
+    .link svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .logout {
+        margin-top: 0;
+    }
+
+    .logout svg {
+        width: 24px;
+        height: 24px;
+    }
+}

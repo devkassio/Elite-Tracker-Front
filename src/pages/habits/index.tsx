@@ -64,6 +64,7 @@ export default function HabitsPage() {
 		habitId: string | null;
 		habitName: string;
 	}>({ isOpen: false, habitId: null, habitName: '' });
+	const [highlightedHabit, setHighlightedHabit] = useState<string | null>(null);
 	const nameInput = useRef<HTMLInputElement>(null);
 
 	// Usa formato YYYY-MM-DD para comparação consistente de datas
@@ -186,7 +187,7 @@ export default function HabitsPage() {
 	const dayCompletionPercentage = useMemo(() => {
 		const habitsOnDate = allHabitsDayStatus.filter((item) => item.existedOnDate);
 		if (habitsOnDate.length === 0) return null;
-		
+
 		const completedCount = habitsOnDate.filter((item) => item.isCompleted).length;
 		const percentage = Math.round((completedCount / habitsOnDate.length) * 100);
 		return `${percentage}%`;
@@ -207,11 +208,17 @@ export default function HabitsPage() {
 		}
 	}, []);
 
-	// Selecionar hábito
+	// Selecionar hábito com highlight temporário de 3s
 	async function handleSelectHabit(habit: Habit) {
 		setSelectedHabit(habit);
 		setSelectedDate(null);
+		setHighlightedHabit(habit.id);
 		await fetchMetrics(habit, currentMonth);
+
+		// Remove o highlight após 3 segundos
+		setTimeout(() => {
+			setHighlightedHabit(null);
+		}, 3000);
 	}
 
 	// Carregar hábitos
@@ -440,12 +447,12 @@ export default function HabitsPage() {
 								const isCompleted = completedDates.some((c) => c.date === today);
 								const isBeingDeleted = deleting === habit.id;
 								const isBeingToggled = toggling === habit.id;
-								const isSelected = selectedHabit?.id === habit.id;
+								const isHighlighted = highlightedHabit === habit.id;
 
 								return (
 									<div
 										key={habit.id}
-										className={`${styles.habit} ${isSelected ? styles.habitActive : ''}`}
+										className={`${styles.habit} ${isHighlighted ? styles.habitActive : ''}`}
 										style={{ opacity: isBeingDeleted ? 0.5 : 1 }}
 										onClick={() => handleSelectHabit(habit)}
 									>
@@ -481,9 +488,9 @@ export default function HabitsPage() {
 						{/* Estatísticas */}
 						<div className={styles.infoContainer}>
 							<Info value={metricsInfo.completedDatesPerMonth} label="Dias concluídos" />
-							<Info 
-								value={selectedDate && dayCompletionPercentage ? dayCompletionPercentage : metricsInfo.completionPercentage} 
-								label={selectedDate ? "% do Dia" : "% do Mês"} 
+							<Info
+								value={selectedDate && dayCompletionPercentage ? dayCompletionPercentage : metricsInfo.completionPercentage}
+								label={selectedDate ? "% do Dia" : "% do Mês"}
 							/>
 						</div>
 

@@ -31,3 +31,11 @@
 .disabled:hover {
 	background-color: var(--neutral);
 }
+
+/* Mobile */
+@media (max-width: 768px) {
+	.container {
+		font-size: 14px;
+		padding: 10px 18px;
+	}
+}

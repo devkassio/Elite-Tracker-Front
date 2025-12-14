@@ -17,3 +17,28 @@
     color: var(--light);
     line-height: 100%;
 }
+
+/* Mobile */
+@media (max-width: 768px) {
+    .container {
+        gap: 4px;
+    }
+
+    .value {
+        font-size: 20px;
+    }
+
+    .label {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .value {
+        font-size: 18px;
+    }
+
+    .label {
+        font-size: 12px;
+    }
+}

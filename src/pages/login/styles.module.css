@@ -5,11 +5,13 @@
 	justify-content: center;
 	align-items: center;
 	color: var(--white);
+	padding: 20px;
 }
 
 .content {
 	background-color: var(--dark-blue);
 	width: 400px;
+	max-width: 100%;
 	border-radius: 8px;
 	display: flex;
 	flex-direction: column;
@@ -29,4 +31,20 @@
 	font-size: 14px;
 	color: #cccccc;
 	text-align: center;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+	.content {
+		width: 100%;
+		padding: 24px 20px;
+	}
+
+	.content h1 {
+		font-size: 20px;
+	}
+
+	.content p {
+		font-size: 12px;
+	}
 }

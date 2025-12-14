@@ -9,6 +9,14 @@ export type UserData = {
 	token: string;
 };
 
+// Tipo da resposta da API (camelCase do backend)
+type ApiUserResponse = {
+	nodeId: string;
+	name: string;
+	avatarUrl: string;
+	token: string;
+};
+
 type UseContextProps = {
 	userData: UserData | null;
 	loading: boolean;
@@ -68,10 +76,13 @@ export default function UserProvider({ children }: UserProviderProps) {
 				throw new Error('Código de autenticação inválido');
 			}
 
-			// Remove o token antigo antes de fazer a requisição de callback (rota pública)
+			// Limpa dados do usuário anterior ANTES de fazer nova autenticação
+			localStorage.removeItem(USER_STORAGE_KEY);
+			localStorage.removeItem(TOKEN_STORAGE_KEY);
 			delete api.defaults.headers.common.Authorization;
+			setUserData(null);
 
-			const { data } = await api.get<UserData>(`/auth/callback?code=${gitHubCode}`);
+			const { data } = await api.get<ApiUserResponse>(`/auth/callback?code=${gitHubCode}`);
 
 			if (!data) {
 				throw new Error('Resposta inválida do servidor');
@@ -81,14 +92,22 @@ export default function UserProvider({ children }: UserProviderProps) {
 				throw new Error('Token não encontrado na resposta');
 			}
 
+			// Mapeia os dados da API para o formato do frontend
+			const userData: UserData = {
+				id: data.nodeId,
+				name: data.name || 'Usuário',
+				avatar_url: data.avatarUrl,
+				token: data.token,
+			};
+
 			// Salva no localStorage
-			localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data));
-			localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
+			localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
+			localStorage.setItem(TOKEN_STORAGE_KEY, userData.token);
 
 			// Configura o token no header do axios
-			api.defaults.headers.common.Authorization = `Bearer ${data.token}`;
+			api.defaults.headers.common.Authorization = `Bearer ${userData.token}`;
 
-			setUserData(data);
+			setUserData(userData);
 		} catch (err: unknown) {
 			let errorMessage = 'Erro desconhecido na autenticação';
 			const axiosError = err as {

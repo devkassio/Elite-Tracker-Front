@@ -401,3 +401,243 @@
     opacity: 0.3;
     cursor: not-allowed;
 }
+
+/* ==================== MOBILE RESPONSIVENESS ==================== */
+
+/* Tablets e dispositivos menores */
+@media (max-width: 768px) {
+    .container {
+        grid-template-columns: 1fr;
+        min-height: 100vh;
+        padding-bottom: 80px; /* Espaço para bottom nav */
+    }
+
+    .content {
+        height: auto;
+        min-height: auto;
+        padding: 20px 15px;
+        border-right: none;
+        border-bottom: 1px solid var(--light);
+    }
+
+    .metrics {
+        height: auto;
+        min-height: auto;
+        padding: 20px 15px;
+    }
+
+    .metricsEmpty {
+        height: auto;
+        min-height: calc(100vh - 70px - 80px); /* Altura total menos header e bottom nav */
+        padding: 20px 15px;
+    }
+
+    /* Header */
+    .header h1 {
+        font-size: 22px;
+    }
+
+    /* Input */
+    .input {
+        padding: 10px;
+        margin-top: 16px;
+        margin-bottom: 12px;
+    }
+
+    .input input {
+        font-size: 14px;
+    }
+
+    /* Habit cards */
+    .habit {
+        padding: 12px 10px;
+    }
+
+    .habit p {
+        font-size: 14px;
+    }
+
+    /* Actions */
+    .actions {
+        gap: 12px;
+    }
+
+    .actions input[type="checkbox"] {
+        width: 22px;
+        height: 22px;
+    }
+
+    .trashIcon {
+        width: 22px;
+        height: 22px;
+    }
+
+    /* Info Container */
+    .infoContainer {
+        gap: 30px;
+        padding: 20px 0;
+    }
+
+    /* Calendar */
+    .calendar {
+        margin-top: 16px;
+    }
+
+    .calendarHeader {
+        max-width: 260px;
+        margin-bottom: 12px;
+    }
+
+    .calendarWeekdays,
+    .calendarDays {
+        max-width: 260px;
+    }
+
+    .calendarDay {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+
+    .calendarTitle {
+        font-size: 14px;
+    }
+
+    /* Day Details */
+    .dayDetails {
+        margin-top: 16px;
+        padding: 16px 0;
+    }
+
+    .dayTitle {
+        font-size: 14px;
+    }
+
+    .timeEntry {
+        padding: 8px 10px;
+    }
+
+    .timeRange {
+        font-size: 13px;
+    }
+
+    .duration {
+        font-size: 12px;
+        min-width: 60px;
+    }
+
+    .dayContent {
+        max-height: 180px;
+    }
+}
+
+/* Smartphones pequenos */
+@media (max-width: 480px) {
+    .content {
+        padding: 15px 12px;
+    }
+
+    .metrics {
+        padding: 15px 12px;
+    }
+
+    /* Header */
+    .header h1 {
+        font-size: 20px;
+    }
+
+    .header span {
+        font-size: 12px;
+    }
+
+    /* Info Container - empilhado */
+    .infoContainer {
+        flex-direction: column;
+        gap: 20px;
+        padding: 15px 0;
+    }
+
+    /* Habit cards */
+    .habit {
+        padding: 10px 8px;
+    }
+
+    .habit p {
+        font-size: 13px;
+    }
+
+    .actions input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+    }
+
+    .trashIcon {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Calendar menor */
+    .calendarHeader {
+        max-width: 240px;
+    }
+
+    .calendarWeekdays,
+    .calendarDays {
+        max-width: 240px;
+    }
+
+    .calendarDay {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+    }
+
+    .weekday {
+        font-size: 10px;
+    }
+
+    .calendarTitle {
+        font-size: 13px;
+    }
+
+    /* Day Details */
+    .dayTitle {
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+
+    .dayPercentage {
+        font-size: 12px;
+    }
+
+    .timeEntry {
+        gap: 8px;
+        padding: 8px;
+    }
+
+    .timeRange {
+        font-size: 12px;
+    }
+
+    .duration {
+        font-size: 11px;
+        min-width: 50px;
+    }
+
+    .noHabitsMessage {
+        font-size: 12px;
+        padding: 15px 8px;
+    }
+
+    .emptyMessage {
+        font-size: 12px;
+    }
+
+    .dayContent {
+        max-height: 150px;
+    }
+
+    .metrics h2 {
+        font-size: 18px;
+    }
+}
